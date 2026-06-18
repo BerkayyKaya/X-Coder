@@ -140,5 +140,13 @@ class WorkflowOrchestrator:
                 current_step = "END"
             
             if current_step == "END":
-                yield f"data: {json.dumps({'status' : 'done', 'message' : 'İşlem tamamlandı!'})}\n"
+                final_payload = {
+                    'status': 'done',
+                    'message': 'İşlem tamamlandı!', # modelin cevabı
+                    'code': context["code"],
+                    'plan': context["plan"],
+                    'tester_feedback': context["tester_feedback"]
+                }
+                
+                yield f"data: {json.dumps(final_payload)}\n"
                 break

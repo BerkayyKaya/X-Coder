@@ -15,7 +15,7 @@ origins = [
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins = origins,  # Prod ortamında bu UI domaini ile sınırlandırılmalı
+    allow_origins = ["*"],  # Prod ortamında bu UI domaini ile sınırlandırılmalı
     allow_credentials = True,
     allow_methods = ["*"],
     allow_headers = ["*"],
