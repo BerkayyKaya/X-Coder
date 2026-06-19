@@ -56,18 +56,17 @@ if prompt := st.chat_input("Bir şeyler yazın!"):
                                 result = json.loads(json_str)
 
                                 status = result.get("status")
-                                message = result.get("message")
+                                status_message = result.get("status_message")
 
-                                st.info(f"Durum: {message}")
+                                st.info(f"Durum: {status_message}")
 
                                 if status == "done":
                                     st.success("İşlem tamamlandı!")
-                                    bot_response = result.get("code", "Sonuç alınamadı") # eğer değer yoksa sonuç alınamadı olarak atayacak
-                                    #st.code(result.get("code", "Kod üretilmedi!"))
+                                    bot_response = result.get("message", "Sonuç alınamadı") # eğer değer yoksa sonuç alınamadı olarak atayacak
                             except json.JSONDecodeError:
                                 st.warning("Gelen paket JSON'a çevirilemedi!")
             else:
-                st.error("BackEND hatası!")
+                st.error("Backend hatası!")
 
 
 

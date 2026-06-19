@@ -7,6 +7,7 @@ from src.core.model_loader import LLMEngine
 from src.agents.router_agent import RouterAgent
 from src.agents.planner_agent import PlannerAgent
 from src.agents.coder_agent import CoderAgent
+from src.agents.chatter_agent import ChatterAgent
 
 load_dotenv("./config/.env")
 
@@ -55,7 +56,7 @@ class WorkflowOrchestrator:
 
         while True:
             if current_step == "ROUTER":
-                yield f"data: {json.dumps({'status' : 'routing', 'message' : 'Yönlendirici isteği inceliyor...'})}\n"
+                yield f"data: {json.dumps({'status' : 'routing', 'status_message' : 'Yönlendirici isteği inceliyor...'})}\n"
                 start_time = time.time()
 
 
@@ -76,7 +77,7 @@ class WorkflowOrchestrator:
                 current_step = routing_decision.get("route", "UNKNOWN")
             
             elif current_step == "PLANNER":
-                yield f"data: {json.dumps({'status' : 'planning', 'message' : 'Kullanıcı isteğine göre plan yapılıyor...'})}\n"
+                yield f"data: {json.dumps({'status' : 'planning', 'status_message' : 'Kullanıcı isteğine göre plan yapılıyor...'})}\n"
                 
                 start_time = time.time()
 
@@ -97,7 +98,7 @@ class WorkflowOrchestrator:
                 current_step = "CODER"
 
             elif current_step == "CODER":
-                yield f"data: {json.dumps({'status' : 'coding', 'message' : 'Kod yazılıyor...'})}\n"
+                yield f"data: {json.dumps({'status' : 'coding', 'status_message' : 'Kod yazılıyor...'})}\n"
 
                 start_time = time.time()
 
@@ -120,29 +121,47 @@ class WorkflowOrchestrator:
 
                 context["coder_attemps"] += 1
 
-                print(f"\n\t[SON ÇIKTI] {context}")
+                #print(f"\n\t[SON ÇIKTI] {context}")
                 
                 current_step = "TESTER"
             
             elif current_step == "TESTER":
-                yield f"data: {json.dumps({'status' : 'testing', 'message' : 'Kod test ediliyor...'})}\n"
+                yield f"data: {json.dumps({'status' : 'testing', 'status_message' : 'Kod test ediliyor...'})}\n"
                 is_valid = True # kod doğru mu?
 
                 if not is_valid and context["coder_attemps"] < 3:
                     context["tester_feedback"] = "Hata: Satır 23 Null pointer exception bulundu."
                     current_step = "CODER"
                 else:
+                    context["tester_feedback"] = "Code valid."
                     current_step = "CHAT"
             
             elif current_step == "CHAT":
-                yield f"data: {json.dumps({'status' : 'chat', 'message' : 'Sonuç hazırlanıyor...'})}\n"
+                yield f"data: {json.dumps({'status' : 'chat', 'status_message' : 'Sonuç hazırlanıyor...'})}\n"
+                
+                start_time = time.time()
+                
                 # chatterin cevabı
+                engine = self._get_or_load_model(
+                    model_path = os.getenv("CHATTER_PATH"),
+                    tokenizer_path = os.getenv("CHATTER_TOKENIZER_PATH"),
+                    quantization = True
+                )
+
+                chatter_agent = ChatterAgent(engine = engine)
+
+                # dynamic prompt injection
+                response = chatter_agent.generate_response(context = context)
+
+                end_time = time.time()
+                print(f"\n\t[INFO] CHATTER Model Cevap Verme Süresi: {end_time - start_time} saniye.")
                 current_step = "END"
             
             if current_step == "END":
                 final_payload = {
                     'status': 'done',
-                    'message': 'İşlem tamamlandı!', # modelin cevabı
+                    'status_message': 'İşlem tamamlandı', 
+                    'message': response, # modelin cevabı
                     'code': context["code"],
                     'plan': context["plan"],
                     'tester_feedback': context["tester_feedback"]
