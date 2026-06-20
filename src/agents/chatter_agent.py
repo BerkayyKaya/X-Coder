@@ -18,7 +18,7 @@ class ChatterAgent(BaseAgent):
 
         self.instructions = formatted_system_prompt
 
-        raw_response = self._generate(user_query = context.get("query", ""), max_new_tokens = 2000)
+        raw_response = self._generate(user_query = context.get("query", ""), max_new_tokens = 2048, do_sample = True, temperature = 0.2)
         print(f"\n\t[DEBUG] CHATTER Modelin Ham Çıktısı: {raw_response}\n")
 
         return raw_response

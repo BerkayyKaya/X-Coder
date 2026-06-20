@@ -9,7 +9,7 @@ class RouterAgent(BaseAgent):
         super().__init__(engine = engine, agent_config_key = "router_agent")
     
     def route_request(self, user_query : str):
-        raw_response = self._generate(user_query)
+        raw_response = self._generate(user_query, do_sample = False) # do_sample False ise temperature verilmez
         print(f"\n\t[DEBUG] ROUTER Modelin Ham Çıktısı: {raw_response}\n")
 
         return self._extract_json(raw_response)

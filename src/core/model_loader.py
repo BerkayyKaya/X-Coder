@@ -52,12 +52,16 @@ class LLMEngine:
 
         return model, tokenizer
     
-    def generate_response(self, messages : list, max_new_tokens : int = 150) -> str:
+    def generate_response(self, messages : list, max_new_tokens : int = 150, **kwargs) -> str:
     
         formatted_prompt = self.tokenizer.apply_chat_template(messages, add_generation_prompt = True, tokenize = False)
         inputs = self.tokenizer(formatted_prompt, return_tensors = "pt").to(self.device)
 
-        outputs = self.model.generate(**inputs, max_new_tokens = max_new_tokens, temperature = 0.1, do_sample = True, eos_token_id = self.tokenizer.eos_token_id)
+        outputs = self.model.generate(
+            **inputs, max_new_tokens = max_new_tokens,  
+            eos_token_id = self.tokenizer.eos_token_id,
+            **kwargs
+        )
 
         input_length = inputs["input_ids"].shape[1] # modele giren token sayısı
         generated_tokens = outputs[0][input_length:]

@@ -9,7 +9,7 @@ class CoderAgent(BaseAgent):
         super().__init__(engine = engine, agent_config_key = "coder_agent")
     
     def generate_code(self, instructions : str):
-        raw_response = self._generate(instructions, max_new_tokens = 1100)
+        raw_response = self._generate(instructions, max_new_tokens = 2048, do_sample = False, repetition_penalty = 1.15) # do_sample False ise temperature verilmez
         print(f"\n\t[DEBUG] CODER Modelin Ham Çıktısı: {raw_response}\n")
 
         return raw_response

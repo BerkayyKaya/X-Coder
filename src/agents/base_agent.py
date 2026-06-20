@@ -19,12 +19,12 @@ class BaseAgent:
         with open(prompt_path, "r", encoding = "utf-8") as file:
             return yaml.safe_load(file)
         
-    def _generate(self, user_query : str, max_new_tokens : int = 150) -> str:
+    def _generate(self, user_query : str, max_new_tokens : int = 150, **kwargs) -> str:
         messages = [
             {"role" : "system", "content" : self.instructions},
             {"role" : "user", "content" : user_query}
         ]
 
-        return self.agent.generate_response(messages, max_new_tokens = max_new_tokens)
+        return self.agent.generate_response(messages, max_new_tokens = max_new_tokens, **kwargs)
     
     
