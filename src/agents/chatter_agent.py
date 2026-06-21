@@ -11,7 +11,8 @@ class ChatterAgent(BaseAgent):
 
         if context.get("code") is not None:
             raw_system_prompt = instructions_dict.get("presentation_role", "")
-            formatted_system_prompt = raw_system_prompt.replace("{plan}", str(context.get("plan", "")))
+            formatted_system_prompt = raw_system_prompt.replace("{query}", str(context.get("query", "")))
+            formatted_system_prompt = formatted_system_prompt.replace("{coder_explanation}", str(context.get("explanation", "")))
         else:
             raw_system_prompt = instructions_dict.get("mentor_role", "")
             formatted_system_prompt = raw_system_prompt 

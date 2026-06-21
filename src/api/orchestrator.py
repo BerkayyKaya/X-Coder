@@ -48,6 +48,7 @@ class WorkflowOrchestrator:
             "query" : user_query,
             "plan" : None,
             "code" : None,
+            "coder_explanation" : None,
             "tester_feedback" : None,
             "coder_attemps" : 0
         }
@@ -110,10 +111,15 @@ class WorkflowOrchestrator:
 
                 coder_agent = CoderAgent(engine = engine)
 
+                # TODO: BURADAKİ İF BLOĞU GELİŞTİRİLECEK MANTIK HATASI VAR
                 if context["plan"] is not None:
-                    context["code"] = coder_agent.generate_code(instructions = context["plan"])
+                    coder_output = coder_agent.generate_code(instructions = context["plan"])
+                    context["code"] = coder_output.get("code")
+                    context["coder_explanation"] = coder_output.get("explanation", "")
                 else:
-                    context["code"] = coder_agent.generate_code(instructions = context["query"])
+                    coder_output = coder_agent.generate_code(instructions = context["query"])
+                    context["code"] = coder_output.get("code")
+                    context["coder_explanation"] = coder_output.get("explanation", "")
 
                 end_time = time.time()
 
@@ -164,6 +170,7 @@ class WorkflowOrchestrator:
                     'message': response, # modelin cevabı
                     'code': context["code"],
                     'plan': context["plan"],
+                    'coder_explanation' : context["coder_explanation"],
                     'tester_feedback': context["tester_feedback"]
                 }
                 
