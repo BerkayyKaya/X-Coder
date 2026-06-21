@@ -33,7 +33,7 @@ for message in st.session_state.messages:
 
 if prompt := st.chat_input("Bir şeyler yazın!"):
 
-    with st.spinner("İş akışı çalıştırılıyor... Lütfen bekleyiniz!"):
+    with st.spinner("İş akışı çalıştırılıyor... Lütfen bekleyiniz!", show_time = True):
         try:
             payload = {"query": prompt}
             st.chat_message("user").markdown(prompt)
@@ -58,11 +58,19 @@ if prompt := st.chat_input("Bir şeyler yazın!"):
                                 status = result.get("status")
                                 status_message = result.get("status_message")
 
-                                st.info(f"Durum: {status_message}")
+                                #st.info(f"Durum: {status_message}")
 
                                 if status == "done":
-                                    st.success("İşlem tamamlandı!")
-                                    bot_response = result.get("message", "Sonuç alınamadı") # eğer değer yoksa sonuç alınamadı olarak atayacak
+                                    #st.success("İşlem tamamlandı!")
+                                    if result.get("message") and result.get("code"):
+                                        bot_response = result.get("message", "Sonuç alınamadı") # eğer değer yoksa sonuç alınamadı olarak atayacak
+                                        generated_code = result.get("code")
+                                        coder_explanation = result.get("coder_explanation", "")
+
+                                        full_message = bot_response + "\n\n" + generated_code + "\n\n" + coder_explanation
+                                    else:
+                                        bot_response = result.get("message")
+                                        full_message = bot_response
                             except json.JSONDecodeError:
                                 st.warning("Gelen paket JSON'a çevirilemedi!")
             else:
@@ -71,11 +79,11 @@ if prompt := st.chat_input("Bir şeyler yazın!"):
 
 
             with st.chat_message("assistant"):
-                st.write_stream(response_generator(bot_response))
+                st.write_stream(response_generator(full_message))
             
             st.session_state.messages.append({
                 "role" : "assistant",
-                "content": bot_response
+                "content": full_message
             })
         
         except requests.exceptions.ConnectionError:
