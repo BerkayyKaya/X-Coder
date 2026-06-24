@@ -66,8 +66,12 @@ if prompt := st.chat_input("Bir şeyler yazın!"):
                                         bot_response = result.get("message", "Sonuç alınamadı") # eğer değer yoksa sonuç alınamadı olarak atayacak
                                         generated_code = result.get("code")
                                         coder_explanation = result.get("coder_explanation", "")
+                                    
+                                        final_output = ""
+                                        for i in range(len(generated_code)):
+                                            final_output += f"{coder_explanation[str(i+1)]}" + " " + f"{generated_code[str(i+1)]}"   
 
-                                        full_message = bot_response + "\n\n" + generated_code + "\n\n" + coder_explanation
+                                        full_message = bot_response + "\n\n" + final_output
                                     else:
                                         bot_response = result.get("message")
                                         full_message = bot_response

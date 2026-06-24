@@ -12,27 +12,41 @@ class CoderAgent(BaseAgent):
         raw_response = self._generate(instructions, max_new_tokens = 2048, do_sample = False, repetition_penalty = 1.15) # do_sample False ise temperature verilmez
         print(f"\n\t[DEBUG] CODER Modelin Ham Çıktısı: {raw_response}\n")
 
-        return self._parse_output(raw_output = raw_response)
-    
-    def _parse_output(self, raw_output : str):
+        return self._parse_output(text = raw_response)
+
+    def _parse_output(self, text : str):
+        banned_words = ["Absolutely", "happy", "Here's", "Certainly!"]
+        codes = re.findall(r"(```.*?```)", text, re.DOTALL)
+        texts = re.findall(r"(.*?)```(?:.*?)```", text, re.DOTALL)
+
         parsed_output = {
-            "code" : "",
+            "code": "",
             "explanation" : ""
         }
 
-        code_match = re.search(r"```.*?```", raw_output, re.DOTALL)
-        if code_match:
-            parsed_output["code"] = code_match.group().strip()
+        if len(codes) > 0 and len(texts) > 0:
+            code_dict = {}
+            for i, block in enumerate(codes):
+                code_dict.update({i+1: f"{block}"})
+            parsed_output["code"] = code_dict
+            del code_dict
+
+            text_dict = {}
+            for i, block in enumerate(texts):
+                if any(word.lower() in block.lower() for word in banned_words) and i == 0:
+                    index = block.find("\n\n")
+                    if index != -1:
+                        block = block[index + 1: ]
+
+                text_dict.update({i+1: f"{block}"})
+            parsed_output["explanation"] = text_dict
+            del text_dict
         else:
-            parsed_output["code"] = raw_output
-        
-        json_match = re.search(r"```json\n(.*?)```", raw_output, re.DOTALL | re.IGNORECASE)
-        if json_match:
-            try:
-                json_data = json.loads(json_match.group(1).strip())
-                parsed_output["explanation"] = json_data.get("explanation", "")
-            except json.JSONDecodeError:
-                exp_match = re.search(r'"explanation"\s*:\s*"(.*?)"', json_match.group(1), re.DOTALL)
-                if exp_match:
-                    parsed_output["explanation"] = exp_match.group(1).strip()
+            code_dict = {}
+            for i, block in enumerate(codes):
+                code_dict.update({i+1: f"{block}"})
+            parsed_output["code"] = code_dict
+            del code_dict
+            parsed_output["explanation"] = "No explanation found."
+
         return parsed_output
