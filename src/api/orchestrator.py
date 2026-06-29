@@ -20,7 +20,7 @@ class WorkflowOrchestrator:
 
         print("\t[INFO] orchestrator hazır!")
 
-    def _get_or_load_model(self, model_path : str, tokenizer_path : str, quantization : bool = False):
+    def _get_or_load_model(self, model_path : str, tokenizer_path : str, backend : str = "transformers", quantization : bool = False):
         
         if self.current_model_path == model_path and self.current_engine is not None:
             return self.current_engine
@@ -31,7 +31,10 @@ class WorkflowOrchestrator:
         self.current_engine = LLMEngine(
             model_path = model_path,
             tokenizer_path = tokenizer_path,
-            quantizaton = quantization
+            backend = backend,
+            n_gpu_layers = 20,
+            n_ctx = 2048,
+            quantization = quantization
         )
 
         self.current_model_path = model_path
@@ -64,6 +67,7 @@ class WorkflowOrchestrator:
                 engine = self._get_or_load_model(
                     model_path = os.getenv("ROUTER_PATH"),
                     tokenizer_path = os.getenv("ROUTER_TOKENIZER_PATH"),
+                    backend = "transformers",
                     quantization = True
                 )
 
@@ -83,8 +87,9 @@ class WorkflowOrchestrator:
                 start_time = time.time()
 
                 engine = self._get_or_load_model(
-                    model_path = os.getenv("ROUTER_PATH"),
-                    tokenizer_path = os.getenv("ROUTER_TOKENIZER_PATH"),
+                    model_path = os.getenv("PLANNER_PATH"),
+                    tokenizer_path = os.getenv("PLANNER_TOKENIZER_PATH"),
+                    backend = "transformers",
                     quantization = True
                 )
 
@@ -104,8 +109,9 @@ class WorkflowOrchestrator:
                 start_time = time.time()
 
                 engine = self._get_or_load_model(
-                    model_path = os.getenv("CODER_PATH"),
-                    tokenizer_path = os.getenv("CODER_TOKENIZER_PATH"),
+                    model_path = os.getenv("CODER_PATH_GGUF"),
+                    tokenizer_path = os.getenv("CODER_TOKENIZER_PATH_GGUF"),
+                    backend = "llama-cpp",
                     quantization = True
                 )
 
@@ -151,6 +157,7 @@ class WorkflowOrchestrator:
                 engine = self._get_or_load_model(
                     model_path = os.getenv("CHATTER_PATH"),
                     tokenizer_path = os.getenv("CHATTER_TOKENIZER_PATH"),
+                    backend = "transformers",
                     quantization = True
                 )
 

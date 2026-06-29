@@ -9,13 +9,16 @@ class CoderAgent(BaseAgent):
         super().__init__(engine = engine, agent_config_key = "coder_agent")
     
     def generate_code(self, instructions : str):
-        raw_response = self._generate(instructions, max_new_tokens = 2048, do_sample = False, repetition_penalty = 1.15) # do_sample False ise temperature verilmez
+        if self.agent.backend == "transformers":
+            raw_response = self._generate(instructions, max_new_tokens = 2048, do_sample = False, repetition_penalty = 1.15) # do_sample False ise temperature verilmez
+        elif self.agent.backend == "llama-cpp":
+            raw_response = self._generate(instructions, max_new_tokens = 2048)
         print(f"\n\t[DEBUG] CODER Modelin Ham Çıktısı: {raw_response}\n")
 
         return self._parse_output(text = raw_response)
 
     def _parse_output(self, text : str):
-        banned_words = ["Absolutely", "happy", "Here's", "Certainly!"]
+        banned_words = ["Absolutely", "happy", "Here's", "Certainly!", "Sure, I can help with that."]
         codes = re.findall(r"(```.*?```)", text, re.DOTALL)
         texts = re.findall(r"(.*?)```(?:.*?)```", text, re.DOTALL)
 
