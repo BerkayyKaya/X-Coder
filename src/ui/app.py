@@ -77,8 +77,11 @@ if prompt := st.chat_input("Bir şeyler yazın!"):
                                         full_message = bot_response
                             except json.JSONDecodeError:
                                 st.warning("Gelen paket JSON'a çevirilemedi!")
+            elif response.status_code == 400:
+                full_message = "I'm sorry, you likely submitted an incomplete or incorrect entry; please state your request a bit more clearly."
             else:
-                st.error("Backend hatası!")
+                st.error("BACKEND Hatası!")
+                full_message = ""
 
 
 
