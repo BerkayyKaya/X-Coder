@@ -10,5 +10,4 @@ src/ui/logo/*
 tests/*
 images/*
 test_run.py
-README.MD
 test.py
