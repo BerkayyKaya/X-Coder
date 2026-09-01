@@ -137,6 +137,7 @@ class LLMEngine:
             messages = messages,
             max_tokens = max_new_tokens,
             stream = False,
+            stop = ["[INST]", "[/INST]", "<|end|>", "<|user|>"],
             **kwargs
         )
 

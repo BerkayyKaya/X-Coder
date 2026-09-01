@@ -7,4 +7,8 @@ src/api/__pycache__
 src/ui/__pycache__/*
 src/utils/__pycache__/*
 src/ui/logo/*
+tests/*
+images/*
 test_run.py
+README.MD
+test.py

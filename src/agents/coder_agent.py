@@ -18,7 +18,7 @@ class CoderAgent(BaseAgent):
         return self._parse_output(text = raw_response)
 
     def _parse_output(self, text : str):
-        banned_words = ["Absolutely", "happy", "Here's", "Certainly!", "Sure, I can help with that."]
+        banned_words = ["Absolutely", "happy", "Here's", "Certainly!", "Sure, I can help with that.", "Sure"]
         codes = re.findall(r"(```.*?```)", text, re.DOTALL)
         texts = re.findall(r"(.*?)```(?:.*?)```", text, re.DOTALL)
 

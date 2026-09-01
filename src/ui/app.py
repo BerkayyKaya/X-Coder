@@ -1,8 +1,10 @@
-import streamlit as st
-import time
-from PIL import Image
-import requests
 import json
+import time
+
+import requests
+import streamlit as st
+from PIL import Image
+
 
 def response_generator(response):
     if response is None:
