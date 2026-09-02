@@ -1,6 +1,9 @@
-from src.core.model_loader import LLMEngine
-import yaml
 import os
+
+import yaml
+
+from src.core.model_loader import LLMEngine
+
 
 # Bütün agentlar için base sınıf
 class BaseAgent:
@@ -24,6 +27,18 @@ class BaseAgent:
             {"role" : "system", "content" : self.instructions},
             {"role" : "user", "content" : user_query}
         ]
+
+        temperature = kwargs.get("temperature", None)
+        if self.agent.backend == "transformers":
+            if temperature == 0.0 or temperature is None:
+                kwargs["do_sample"] = False
+                kwargs.pop("temperature", None) 
+            else:
+                kwargs["do_sample"] = True
+                kwargs["temperature"] = temperature
+                
+        elif self.agent.backend == "llama-cpp":
+            kwargs["temperature"] = max(0.0, temperature) # Negatif olmamalı
 
         return self.agent.generate_response(messages, max_new_tokens = max_new_tokens, **kwargs)
     
