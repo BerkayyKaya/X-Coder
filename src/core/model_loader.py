@@ -1,6 +1,8 @@
-import os
-import torch
 import gc
+import os
+
+import torch
+
 
 class LLMEngine:
     def __init__(self, model_path : str = None, tokenizer_path : str = None, backend : str = None, **kwargs):
@@ -44,12 +46,16 @@ class LLMEngine:
     def _load_with_transformers(self):
         # Import kontrolleri
         try:
-            from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
+            from transformers import (
+                AutoModelForCausalLM,
+                AutoTokenizer,
+                BitsAndBytesConfig,
+            )
         except ModuleNotFoundError:
-            raise ModuleNotFoundError(f"\n\t[ERROR] Sistemde transformers kütüphanesi bulunamadı! "
+            raise ModuleNotFoundError("\n\t[ERROR] Sistemde transformers kütüphanesi bulunamadı! "
                                       "\n\tLütfen ilgili kütüphaneyi yükleyiniz:\n\tpip install transformers")
         except ImportError:
-            raise ImportError(f"\n\t[ERROR] Sistemde transformers kütüphanesi bulundu ancak modülleri eksik veya hatalı olabilir." 
+            raise ImportError("\n\t[ERROR] Sistemde transformers kütüphanesi bulundu ancak modülleri eksik veya hatalı olabilir." 
                               "\n\tLütfen ilgili kütüphaneyi güncelleyin:\n\tpip install --upgrade transformers")
         
         print(f"\t[INFO] Model Yükleniyor... {self.model_path} -> {self.device}")
@@ -89,24 +95,26 @@ class LLMEngine:
         try:
             from llama_cpp import Llama
         except ModuleNotFoundError:
-            raise ModuleNotFoundError(f"\n\t[ERROR] Sistemde llama_cpp kütüphanesi bulunamadı! "
+            raise ModuleNotFoundError("\n\t[ERROR] Sistemde llama_cpp kütüphanesi bulunamadı! "
                                       "Lütfen ilgili kütüphaneyi yükleyiniz:\n\tpip install llama-cpp-python")
         except ImportError:
-            raise ImportError(f"\n\t[ERROR] Sistemde llama_cpp kütüphanesi var ancak modülleri eksik veya hatalı olabilir "
+            raise ImportError("\n\t[ERROR] Sistemde llama_cpp kütüphanesi var ancak modülleri eksik veya hatalı olabilir "
                               "\n\tLütfen ilgili kütüphaneyi güncelleyin:\n\tpip install --upgrade llama-cpp-python")
         
         n_gpu_layers = self.kwargs.get("n_gpu_layers", -1) # eğer belirtilmemişse komple gpu'ya yükle
         n_ctx = self.kwargs.get("n_ctx", 4096) # belirtilmemişse context_size değerini 4096 olarak ayarla
+        chat_format = self.kwargs.get("chat_format")
         
         print(f"\t[INFO] Model Yükleniyor... {self.model_path.split('/')[-1]}")
         model = Llama(
             model_path = self.model_path,
             n_gpu_layers = n_gpu_layers,
             n_ctx = n_ctx,
+            chat_format = chat_format,
             verbose = False
         )
 
-        print(f"\n\t[INFO] Model Başarılı Bir Şekilde Yüklendi!")
+        print("\n\t[INFO] Model Başarılı Bir Şekilde Yüklendi!")
         return model, None # llama_cpp tokenizeri kendi içinde yönetiyor o yüzden tokenizere gerek yok
     
     #endregion
@@ -137,7 +145,7 @@ class LLMEngine:
             messages = messages,
             max_tokens = max_new_tokens,
             stream = False,
-            stop = ["[INST]", "[/INST]", "<|end|>", "<|user|>"],
+            stop = ["[INST]", "[/INST]", "<|end|>", "<|user|>", "<|EOT|>", "### Instruction:"],
             **kwargs
         )
 
@@ -154,4 +162,4 @@ class LLMEngine:
 
         if self.device == "cuda" and torch.cuda.is_available():
             torch.cuda.empty_cache() # GPU Belleğini boşa çıkar
-        print(f"\n\t[INFO] Model Bellekten Temizlendi!")
+        print("\n\t[INFO] Model Bellekten Temizlendi!")

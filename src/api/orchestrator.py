@@ -1,13 +1,15 @@
-import json
 import asyncio
+import json
 import os
 import time
+
 from dotenv import load_dotenv
-from src.core.model_loader import LLMEngine
-from src.agents.router_agent import RouterAgent
-from src.agents.planner_agent import PlannerAgent
-from src.agents.coder_agent import CoderAgent
+
 from src.agents.chatter_agent import ChatterAgent
+from src.agents.coder_agent import CoderAgent
+from src.agents.planner_agent import PlannerAgent
+from src.agents.router_agent import RouterAgent
+from src.core.model_loader import LLMEngine
 
 load_dotenv("./config/.env")
 
@@ -20,7 +22,7 @@ class WorkflowOrchestrator:
 
         print("\t[INFO] orchestrator hazır!")
 
-    def _get_or_load_model(self, model_path : str, tokenizer_path : str, backend : str = "transformers", quantization : bool = False):
+    def _get_or_load_model(self, model_path : str, tokenizer_path : str, backend : str = "transformers", quantization : bool = False, **kwargs):
         
         if self.current_model_path == model_path and self.current_engine is not None:
             return self.current_engine
@@ -34,7 +36,8 @@ class WorkflowOrchestrator:
             backend = backend,
             n_gpu_layers = 20,
             n_ctx = 2048,
-            quantization = quantization
+            quantization = quantization,
+            **kwargs
         )
 
         self.current_model_path = model_path
@@ -65,10 +68,11 @@ class WorkflowOrchestrator:
 
 
                 engine = self._get_or_load_model(
-                    model_path = os.getenv("ROUTER_PATH"),
-                    tokenizer_path = os.getenv("ROUTER_TOKENIZER_PATH"),
-                    backend = "transformers",
-                    quantization = True
+                    model_path = os.getenv("ROUTER_PATH_GGUF"),
+                    tokenizer_path = os.getenv("ROUTER_TOKENIZER_PATH_GGUF"),
+                    backend = "llama-cpp",
+                    quantization = True,
+                    chat_format = "chatml"
                 )
 
                 router_agent = RouterAgent(engine = engine)
@@ -112,7 +116,8 @@ class WorkflowOrchestrator:
                     model_path = os.getenv("CODER_PATH_GGUF"),
                     tokenizer_path = os.getenv("CODER_TOKENIZER_PATH_GGUF"),
                     backend = "llama-cpp",
-                    quantization = True
+                    quantization = True,
+                    chat_format = "alpaca"
                 )
 
                 coder_agent = CoderAgent(engine = engine)
@@ -155,10 +160,11 @@ class WorkflowOrchestrator:
                 
                 # chatterin cevabı
                 engine = self._get_or_load_model(
-                    model_path = os.getenv("CHATTER_PATH"),
-                    tokenizer_path = os.getenv("CHATTER_TOKENIZER_PATH"),
-                    backend = "transformers",
-                    quantization = True
+                    model_path = os.getenv("CHATTER_PATH_GGUF"),
+                    tokenizer_path = os.getenv("CHATTER_TOKENIZER_PATH_GGUF"),
+                    backend = "llama-cpp",
+                    quantization = True,
+                    chat_format = "chatml"
                 )
 
                 chatter_agent = ChatterAgent(engine = engine)
